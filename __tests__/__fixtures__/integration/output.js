@@ -2,7 +2,7 @@ import React from "react";
 import _styled from "cssta/native";
 import "./styles.css";
 import { View, Text, Animated } from "react-native";
-var Styled_Header = _styled(Text)`
+const Styled_Header = _styled(Text)`
 & {
   font-size: 24px;
   line-height: 32px;
@@ -12,7 +12,7 @@ var Styled_Header = _styled(Text)`
   font-weight: bold;
 }
 `;
-var Styled_Content = _styled(View)`
+const Styled_Content = _styled(View)`
 & {
   background-color: rgba(0, 60, 120, 0.5);
 }
@@ -22,7 +22,7 @@ var Styled_Content = _styled(View)`
   min-height: 100vh;
 }
 `;
-var Styled_Button2 = _styled(View)`
+const Styled_Button2 = _styled(View)`
 & {
   font-size: 12px;
 }
@@ -33,7 +33,7 @@ var Styled_Button2 = _styled(View)`
   }
 }
 `;
-var Styled_Button = _styled(Text)`
+const Styled_Button = _styled(Text)`
 & {
   font-size: 12px;
 }
@@ -44,18 +44,7 @@ var Styled_Button = _styled(Text)`
   }
 }
 `;
-var Styled_Button = _styled(Text)`
-& {
-  font-size: 12px;
-}
-
-@media (min-width: 500px) {
-  &[@variant='primary'] {
-    color: red;
-  }
-}
-`;
-var Styled_Topbar = _styled(Animated.View)`
+const Styled_Topbar = _styled(Animated.View)`
 & {
   height: 40px;
   background-color: var(--bgColor);
@@ -80,7 +69,7 @@ var Styled_Topbar = _styled(Animated.View)`
   }
 }
 `;
-var Styled_Root = _styled(View)`
+const Styled_Root = _styled(View)`
 & {
   flex: 1;
   --color: black;

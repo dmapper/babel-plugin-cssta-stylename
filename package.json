@@ -29,6 +29,7 @@
   },
   "files": [
     "index.js",
+    "utils.js",
     "README.md"
   ],
   "devDependencies": {
