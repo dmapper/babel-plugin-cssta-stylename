@@ -4,7 +4,7 @@ Create `cssta` custom components out of a standalone css file.
 
 ## Idea
 
-- Use `styleName` attribute is to get the styles for a particular class from the css file.
+- Use `styleName` attribute to get the styles for a particular class from the css file.
 - Attributes in CSS are written using regular syntax (without `@`). `@` gets added during the compilation. The reason to get rid of `@` in css is because of the poor syntax highlighting. Also in future it makes sense to make removal of css-only attributes optional in `cssta`. And instead let them flow through into the underlying component.
 - Other than that, pretty much all the functionality and syntax of `cssta` should stay the same.
 
