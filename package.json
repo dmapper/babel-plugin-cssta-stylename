@@ -1,0 +1,79 @@
+{
+  "name": "babel-plugin-cssta-stylename",
+  "version": "0.1.0",
+  "description": "Transform css imports into cssta template components",
+  "keywords": [
+    "babel",
+    "babel-plugin",
+    "pug",
+    "classname",
+    "classnames",
+    "stylename",
+    "style",
+    "react",
+    "react-native",
+    "react-native-web",
+    "BEM"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "release": "npmpub",
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "author": "Pavel Zhukov",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmapper/babel-plugin-cssta-stylename"
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.8.3",
+    "@babel/plugin-syntax-jsx": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "@babel/preset-react": "^7.8.3",
+    "@babel/template": "^7.8.3",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-jest": "^25.1.0",
+    "babel-plugin-tester": "^8.0.1",
+    "coveralls": "^3.0.0",
+    "css": "^2.2.4",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "husky": "^4.2.1",
+    "jest": "^25.1.0",
+    "jest-cli": "^25.1.0",
+    "lint-staged": "^10.0.3",
+    "npmpub": "^5.0.0",
+    "prettier": "^1.10.2"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ]
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "standard",
+    "env": {
+      "jest": true
+    }
+  },
+  "jest": {
+    "testRegex": "/__tests__/.*\\.spec.js?$"
+  }
+}
