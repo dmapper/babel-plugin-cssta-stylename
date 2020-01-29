@@ -9,27 +9,15 @@ function isTargetAttr (attribute, classAttribute) {
   return attribute.name.name === classAttribute
 }
 
-module.exports = (babel) => {
-  const t = babel.types
+module.exports = ({ types: t }) => {
   let lastImport
   let stylesImport
   let program
   let csstaTemplate
-  let importAnimated  // TODO: Add Animated import automatically
+  let importAnimated // TODO: Add Animated import automatically
   let hasTransformedClassName
   let ast
-  const processedItems = []
-
-  function isRequire (node) {
-    return (
-      node &&
-      node.declarations &&
-      node.declarations[0] &&
-      node.declarations[0].init &&
-      node.declarations[0].init.callee &&
-      node.declarations[0].init.callee.name === 'require'
-    )
-  }
+  let processedItems = []
 
   function getUniqueStyledTag (className) {
     const capitalized = className.charAt(0).toUpperCase() + className.slice(1)
@@ -89,7 +77,10 @@ module.exports = (babel) => {
     const styled = t.taggedTemplateExpression(
       t.callExpression(csstaTemplate, [oldTagExpr]),
       t.templateLiteral([
-        t.templateElement({ raw: '\n' + styles + '\n' })
+        t.templateElement({
+          raw: `\n${styles}\n`.replace(/\\|`|\${/g, '\\$&'),
+          cooked: `\n${styles}\n`
+        })
       ], [])
     )
 
@@ -125,38 +116,54 @@ module.exports = (babel) => {
 
   return {
     post () {
+      lastImport = null
+      stylesImport = null
+      program = null
+      csstaTemplate = null
+      importAnimated = null
       hasTransformedClassName = null
+      ast = null
+      processedItems = []
     },
     visitor: {
       Program: {
         enter (path, state) {
+          if (stylesImport) return
+
+          path
+            .get('body')
+            .forEach(p => {
+              if (p.isImportDeclaration()) {
+                lastImport = p
+                if (p.node.specifiers.length === 0 && /\.css$/.test(p.node.source.value)) {
+                  stylesImport = p
+                }
+              }
+            })
+
+          if (!stylesImport) return
           program = path
           csstaTemplate = path.scope.generateUidIdentifier(CSSTA_TEMPLATE)
 
-          // Find the last import to start writing cssta components after it
-          lastImport = path
-            .get('body')
-            .filter(p => p.isImportDeclaration() || isRequire(p.node))
-            .pop()
-        },
-        exit (path, state) {
+          try {
+            ast = utils.parseAst(state.file.opts.filename, stylesImport.node.source.value)
+          } catch (e) {
+            throw new Error('Error parsing CSS file "' + state.file.opts.filename + '": ' + e.message || e)
+          }
+
+          const csstaSpecifier = t.importDefaultSpecifier(csstaTemplate)
+          const csstaImport = t.importDeclaration([csstaSpecifier], t.stringLiteral('cssta/native'))
+          const [newPath] = path.unshiftContainer('body', csstaImport)
+          for (const specifier of newPath.get('specifiers')) {
+            path.scope.registerBinding('module', specifier)
+          }
         }
       },
-      ImportDeclaration (path, state) {
-        // Find css file import and parse its AST
-        if (!(path.node.specifiers.length === 0 && /\.css$/.test(path.node.source.value))) return
-        stylesImport = path
-        ast = utils.parseAst(state.file.opts.filename, path.node.source.value)
-        path.insertBefore(t.importDeclaration([
-          t.importDefaultSpecifier(csstaTemplate)
-        ], t.stringLiteral('cssta/native')))
-      },
-      JSXElement (path, params) {
-        path.traverse({
-          JSXOpeningElement (path) {
-            processClass(path, params.opts)
-          }
-        })
+
+      JSXOpeningElement (path, params) {
+        if (!stylesImport) return
+        if (!ast) return
+        processClass(path, params.opts)
       }
     }
   }
