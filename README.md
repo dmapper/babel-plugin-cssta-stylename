@@ -16,7 +16,7 @@ To see an example check the `__tests__/__fixtures__` folder.
 npm i --save-dev babel-plugin-cssta-stylename babel-plugin-cssta
 ```
 
-Specify babel plugins in the following order:
+Specify babel plugins in the following order and before any other plugins you already have:
 
 ```json
 [
