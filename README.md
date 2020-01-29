@@ -13,14 +13,13 @@ To see an example check the `__tests__/__fixtures__` folder.
 ## Installation
 
 ```
-npm i --save-dev babel-plugin-cssta-stylename @babel/plugin-syntax-jsx babel-plugin-cssta
+npm i --save-dev babel-plugin-cssta-stylename babel-plugin-cssta
 ```
 
 Specify babel plugins in the following order:
 
 ```json
 [
-  "@babel/plugin-syntax-jsx",
   "babel-plugin-cssta-stylename",
   "babel-plugin-cssta"
 ]
