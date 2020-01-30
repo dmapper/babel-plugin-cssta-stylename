@@ -52,7 +52,7 @@ module.exports = ({ types: t }) => {
       styles = utils.transformStylesForCssta(styles, className)
       const animate = utils.hasAnimation(styles) && utils.isAnimatable(item.oldTag)
       const oldTagExpr = getOldTagExpr(item.oldTag, animate)
-      const newTagExpr = getNewTagExpr(item.newTag, oldTagExpr, styles)
+      const newTagExpr = getNewTagExpr(item.newTag, oldTagExpr, styles, JSXOpeningElement)
       lastImport.insertAfter(newTagExpr)
     }
   }
@@ -75,7 +75,7 @@ module.exports = ({ types: t }) => {
     }
   }
 
-  function getNewTagExpr (newTag, oldTagExpr, styles) {
+  function getNewTagExpr (newTag, oldTagExpr, styles, path) {
     const styled = t.taggedTemplateExpression(
       t.callExpression(csstaTemplate, [oldTagExpr]),
       t.templateLiteral([
@@ -85,8 +85,9 @@ module.exports = ({ types: t }) => {
         })
       ], [])
     )
-
-    const d = t.variableDeclarator(t.identifier(newTag), styled)
+    const reactIdentifier = utils.getReactImport(t, path)
+    const memoed = t.callExpression(t.memberExpression(reactIdentifier, t.identifier('memo')), [styled])
+    const d = t.variableDeclarator(t.identifier(newTag), memoed)
     return t.variableDeclaration('const', [d])
   }
 
@@ -113,6 +114,26 @@ module.exports = ({ types: t }) => {
     if (className && stylesImport) {
       hasTransformedClassName = true
       processItem(JSXOpeningElement, className)
+    }
+  }
+
+  function maybeUpdateCssHash (delayExecution, state) {
+    // Force update JS file in the same directory with the new css file hash.
+    // This is required for proper development experience on native and web.
+    // TODO: Make this a plugin option and only enabled in dev env.
+    const addCssHash = state.opts.addCssHash != null
+      ? state.opts.addCssHash
+      : DEFAULT_ADD_CSS_HASH
+    if (addCssHash && /\.css$/.test(state.file.opts.filename)) {
+      const filename = state.file.opts.filename
+      // Delay execution to account for Save All delay in IDEs
+      if (delayExecution) {
+        setTimeout(() => {
+          utils.maybeUpdateCssHash(filename)
+        }, ADD_CSS_HASH_DELAY)
+      } else {
+        utils.maybeUpdateCssHash(filename)
+      }
     }
   }
 
@@ -161,19 +182,7 @@ module.exports = ({ types: t }) => {
           ast = null
           processedItems = []
 
-          // Force update JS file in the same directory with the new css file hash.
-          // This is required for proper development experience on native and web.
-          // TODO: Make this a plugin option and only enabled in dev env.
-          const addCssHash = state.opts.addCssHash != null
-            ? state.opts.addCssHash
-            : DEFAULT_ADD_CSS_HASH
-          if (addCssHash && /\.css$/.test(state.file.opts.filename)) {
-            const filename = state.file.opts.filename
-            // Delay execution to account for Save All delay in IDEs
-            setTimeout(() => {
-              utils.maybeUpdateCssHash(filename)
-            }, ADD_CSS_HASH_DELAY)
-          }
+          maybeUpdateCssHash(true, state)
         }
       },
 

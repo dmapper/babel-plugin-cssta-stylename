@@ -100,3 +100,16 @@ function hashCode (source) {
   }
   return hash
 }
+
+exports.getReactImport = function getReactImport (t, path) {
+  const allBindings = Object.values(path.scope.getAllBindingsOfKind('module'))
+  const allImportBindings = allBindings.filter(reference =>
+    t.isImportDefaultSpecifier(reference.path.node)
+  )
+  const importBindingsForModule = allImportBindings.filter(reference => {
+    const importDeclaration = reference.path.findParent(t.isImportDeclaration)
+    const importModuleName = importDeclaration.node.source.value
+    return importModuleName === 'react'
+  })
+  return importBindingsForModule[0] && t.cloneDeep(importBindingsForModule[0].identifier)
+}
