@@ -69,3 +69,34 @@ exports.isAnimatable = function isAnimatable (tag) {
 exports.hasAnimation = function hasAnimation (styles) {
   return /(?:animation:|transition:)/.test(styles)
 }
+
+// Check if .js file with the same name exists.
+// If it does -- check if it uses the css file (filename).
+// If it does -- check if
+exports.maybeUpdateCssHash = function maybeUpdateCssHash (filename) {
+  let componentName = filename.match(/\/([^/]+)\.css$/)
+  componentName = componentName && componentName[1]
+  const jsFileName = `./${componentName}.js`
+  if (!fs.existsSync(jsFileName)) return
+  let jsFile = fs.readFileSync(jsFileName, { encoding: 'utf8' })
+  if (!new RegExp(`\\.\\/${componentName}\\.css['"]`).test(jsFile)) return
+  const content = fs.readFileSync(filename, { encoding: 'utf8' })
+  const newHash = hashCode(content)
+  let oldHash = jsFile.match(/@css_hash_([\d-]+)/)
+  oldHash = oldHash && oldHash[1]
+  if (~~oldHash === ~~newHash) return
+  jsFile = jsFile.replace(new RegExp(`(\\.\\/${componentName}\\.css['"])[^\\n]*\n`), `$1 // @css_hash_${newHash}\n`)
+  fs.writeFileSync(jsFileName, jsFile)
+  console.log('[babel-plugin-cssta-stylename] updated @css_hash in', jsFileName)
+}
+
+function hashCode (source) {
+  let hash = 0
+  if (source.length === 0) return hash
+  for (var i = 0; i < source.length; i++) {
+    const char = source.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return hash
+}

@@ -1,5 +1,5 @@
-import React from "react";
 import _styled from "cssta/native";
+import React from "react";
 import "./styles.css";
 import { View, Text, Animated } from "react-native";
 const Styled_Header = _styled(Text)`

@@ -1,6 +1,8 @@
 const utils = require('./utils')
 
 const DEFAULT_CLASS_ATTRIBUTE = 'styleName'
+const DEFAULT_ADD_CSS_HASH = true
+const ADD_CSS_HASH_DELAY = 300
 const CSSTA_TEMPLATE = 'styled'
 const NEW_TAG_PREFIX = 'Styled'
 
@@ -88,18 +90,18 @@ module.exports = ({ types: t }) => {
     return t.variableDeclaration('const', [d])
   }
 
-  function processClass (JSXOpeningElement, opts) {
+  function processClass (JSXOpeningElement, state) {
     var className = null
 
     JSXOpeningElement.traverse({
       JSXAttribute (JSXAttribute) {
-        if (!isTargetAttr(JSXAttribute.node, opts.classAttribute)) return
+        if (!isTargetAttr(JSXAttribute.node, state.opts.classAttribute)) return
 
         if (t.isStringLiteral(JSXAttribute.node.value)) {
           var classNameValue = JSXAttribute.node.value.value.split(' ')
           className = classNameValue[0]
           if (classNameValue.length > 1) {
-            // TODO: Throw an error when more than 1 class specified
+            // TODO: Maybe throw an error when more than 1 class specified
             JSXAttribute.get('value').replaceWith(t.stringLiteral(classNameValue.slice(1).join(' ')))
           } else {
             JSXAttribute.remove()
@@ -116,14 +118,6 @@ module.exports = ({ types: t }) => {
 
   return {
     post () {
-      lastImport = null
-      stylesImport = null
-      program = null
-      csstaTemplate = null
-      importAnimated = null
-      hasTransformedClassName = null
-      ast = null
-      processedItems = []
     },
     visitor: {
       Program: {
@@ -135,9 +129,7 @@ module.exports = ({ types: t }) => {
             .forEach(p => {
               if (p.isImportDeclaration()) {
                 lastImport = p
-                if (p.node.specifiers.length === 0 && /\.css$/.test(p.node.source.value)) {
-                  stylesImport = p
-                }
+                if (/\.css$/.test(p.node.source.value)) stylesImport = p
               }
             })
 
@@ -153,17 +145,42 @@ module.exports = ({ types: t }) => {
 
           const csstaSpecifier = t.importDefaultSpecifier(csstaTemplate)
           const csstaImport = t.importDeclaration([csstaSpecifier], t.stringLiteral('cssta/native'))
-          const [newPath] = path.unshiftContainer('body', csstaImport)
+          const [newPath] = program.unshiftContainer('body', csstaImport)
+
           for (const specifier of newPath.get('specifiers')) {
-            path.scope.registerBinding('module', specifier)
+            program.scope.registerBinding('module', specifier)
+          }
+        },
+        exit (path, state) {
+          lastImport = null
+          stylesImport = null
+          program = null
+          csstaTemplate = null
+          importAnimated = null
+          hasTransformedClassName = null
+          ast = null
+          processedItems = []
+
+          // Force update JS file in the same directory with the new css file hash.
+          // This is required for proper development experience on native and web.
+          // TODO: Make this a plugin option and only enabled in dev env.
+          const addCssHash = state.opts.addCssHash != null
+            ? state.opts.addCssHash
+            : DEFAULT_ADD_CSS_HASH
+          if (addCssHash && /\.css$/.test(state.file.opts.filename)) {
+            const filename = state.file.opts.filename
+            // Delay execution to account for Save All delay in IDEs
+            setTimeout(() => {
+              utils.maybeUpdateCssHash(filename)
+            }, ADD_CSS_HASH_DELAY)
           }
         }
       },
 
-      JSXOpeningElement (path, params) {
+      JSXOpeningElement (path, state) {
         if (!stylesImport) return
         if (!ast) return
-        processClass(path, params.opts)
+        processClass(path, state)
       }
     }
   }
