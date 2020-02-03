@@ -21,34 +21,43 @@ exports.parseAst = function parseAst (modulePath, cssPath) {
 
 exports.getStylesMatchingClassFromAst = function getStylesMatchingClassFromAst (ast, className) {
   const regex = new RegExp(`\\.${className}(?:[^\\w\\-]|$)`)
-  const newAst = {
+  let keyframes = []
+
+  const newAst = getNewAst(ast.stylesheet.rules.map(rule => {
+    if (rule.type === 'keyframes') {
+      keyframes.push(rule)
+    } else {
+      return matchRule(rule, regex)
+    }
+  }).filter(Boolean))
+
+  let matchingCss = css.stringify(newAst) || ''
+  keyframes = keyframes.filter(({ name }) => (
+    name && new RegExp('[:,\\s]' + name + '[:,\\s]').test(matchingCss)
+  ))
+  if (keyframes.length > 0) {
+    matchingCss += (matchingCss ? '\n' : '') + css.stringify(getNewAst(keyframes))
+  }
+  return matchingCss
+}
+
+function getNewAst (rules) {
+  return {
     type: 'stylesheet',
     stylesheet: {
-      rules: []
+      rules: rules
     }
   }
-  newAst.stylesheet.rules = ast.stylesheet.rules.map(rule => {
-    if (rule.type === 'media') {
-      const rules = rule.rules.map(rule => {
-        if (rule.type === 'rule') {
-          const selectors = rule.selectors.map(selector => {
-            if (regex.test(selector)) return selector
-          }).filter(Boolean)
-          if (selectors.length > 0) return { ...rule, selectors }
-        }
-      }).filter(Boolean)
-      if (rules.length > 0) return { ...rule, rules }
-    } else if (rule.type === 'keyframes') {
-      return rule
-    } else if (rule.type === 'rule') {
-      const selectors = rule.selectors.map(selector => {
-        if (regex.test(selector)) return selector
-      }).filter(Boolean)
-      if (selectors.length > 0) return { ...rule, selectors }
-    }
-  }).filter(Boolean)
+}
 
-  return css.stringify(newAst)
+function matchRule (rule, regex) {
+  if (rule.rules) {
+    const rules = rule.rules.map(rule => matchRule(rule, regex)).filter(Boolean)
+    if (rules.length > 0) return { ...rule, rules }
+  } else if (rule.selectors) {
+    const selectors = rule.selectors.filter(selector => regex.test(selector))
+    if (selectors.length > 0) return { ...rule, selectors }
+  }
 }
 
 exports.transformStylesForCssta = function transformStylesForCssta (styles, className) {

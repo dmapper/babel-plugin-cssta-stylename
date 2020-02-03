@@ -15,6 +15,7 @@
   height: 40px;
   background-color: var(--bgColor);
   transition: opacity 0.3s;
+  animation: fadeIn 0.3s ease-in;
 }
 
 .topbar[transparent] {
@@ -48,6 +49,7 @@
 .header {
   font-size: 24px;
   line-height: 32px;
+  animation: fadeIn 1s ease-out;
 }
 
 .header[bold] {
@@ -61,4 +63,13 @@
 .content[full] {
   flex: 1;
   min-height: 100vh;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

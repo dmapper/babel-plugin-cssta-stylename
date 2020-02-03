@@ -2,17 +2,27 @@ import _styled from "cssta/native";
 import React from "react";
 import "./styles.css";
 import { View, Text, Animated } from "react-native";
-const Styled_Header = _styled(Text)`
+const Styled_Header = React.memo(_styled(Animated.Text)`
 & {
   font-size: 24px;
   line-height: 32px;
+  animation: fadeIn 1s ease-out;
 }
 
 &[@bold] {
   font-weight: bold;
 }
-`;
-const Styled_Content = _styled(View)`
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+`);
+const Styled_Content = React.memo(_styled(View)`
 & {
   background-color: rgba(0, 60, 120, 0.5);
 }
@@ -21,8 +31,8 @@ const Styled_Content = _styled(View)`
   flex: 1;
   min-height: 100vh;
 }
-`;
-const Styled_Button2 = _styled(View)`
+`);
+const Styled_Button2 = React.memo(_styled(View)`
 & {
   font-size: 12px;
 }
@@ -32,8 +42,8 @@ const Styled_Button2 = _styled(View)`
     color: red;
   }
 }
-`;
-const Styled_Button = _styled(Text)`
+`);
+const Styled_Button = React.memo(_styled(Text)`
 & {
   font-size: 12px;
 }
@@ -43,12 +53,13 @@ const Styled_Button = _styled(Text)`
     color: red;
   }
 }
-`;
-const Styled_Topbar = _styled(Animated.View)`
+`);
+const Styled_Topbar = React.memo(_styled(Animated.View)`
 & {
   height: 40px;
   background-color: var(--bgColor);
   transition: opacity 0.3s;
+  animation: fadeIn 0.3s ease-in;
 }
 
 &[@transparent] {
@@ -68,8 +79,17 @@ const Styled_Topbar = _styled(Animated.View)`
     height: 20px;
   }
 }
-`;
-const Styled_Root = _styled(View)`
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+`);
+const Styled_Root = React.memo(_styled(View)`
 & {
   flex: 1;
   --color: black;
@@ -82,7 +102,7 @@ const Styled_Root = _styled(View)`
   --color: white;
   --bgColor: black;
 }
-`;
+`);
 export default function App() {
   return (
     <>
