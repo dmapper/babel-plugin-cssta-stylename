@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-cssta-stylename",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Transform css imports into cssta template components",
   "keywords": [
     "babel",
