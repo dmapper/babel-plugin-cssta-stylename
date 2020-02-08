@@ -26,7 +26,8 @@ Specify babel plugins in the following order and before any other plugins you mi
   ["babel-plugin-cssta-stylename", {
     "classAttribute": "styleName",
     "addCssHash": false,
-    "extensions": [".css", ".styl"]
+    "extensions": [".css", ".styl"],
+    "wrapInMemo": false
   }],
   "babel-plugin-cssta"
 ]
@@ -37,6 +38,7 @@ Specify babel plugins in the following order and before any other plugins you mi
 - `classAttribute` - what attribute to use for the class name. Default: `"styleName"`.
 - `addCssHash` - automatically add comment with unique hash on the css `import` line of the `.js`/`.jsx` file with the same name and in the same directory as the css file. Useful to have it development to force trigger hot-reloading of components when changing only the css file. Default: `false`
 - `extensions` - which style imports to parse. Besides regular css, stylus preprocessor is also supported.
+- `wrapInMemo` - whether to wrap created styled components into React.memo(). Wrapping seems to be breaking HMR on Webpack for some reason. Default: `false`
 
 ## Test
 

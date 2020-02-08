@@ -3,7 +3,8 @@ const utils = require('./utils')
 const DEFAULT_CLASS_ATTRIBUTE = 'styleName'
 const DEFAULT_ADD_CSS_HASH = false
 const DEFAULT_EXTENSIONS = ['css', 'styl']
-const ADD_CSS_HASH_DELAY = 300
+const DEFAULT_WRAP_IN_MEMO = false
+const ADD_CSS_HASH_DELAY = 800
 const CSSTA_TEMPLATE = 'styled'
 const NEW_TAG_PREFIX = 'Styled'
 
@@ -34,7 +35,7 @@ module.exports = ({ types: t }) => {
     return NEW_TAG_PREFIX + uniqueName
   }
 
-  function processItem (JSXOpeningElement, className) {
+  function processItem (JSXOpeningElement, className, wrapInMemo) {
     const oldTag = JSXOpeningElement.node.name.name
     let item = processedItems.find(i => (
       i.className === className && i.oldTag === oldTag
@@ -59,7 +60,7 @@ module.exports = ({ types: t }) => {
       styles = utils.transformStylesForCssta(styles, className)
       const animate = utils.hasAnimation(styles) && utils.isAnimatable(item.oldTag)
       const oldTagExpr = getOldTagExpr(item.oldTag, animate)
-      const newTagExpr = getNewTagExpr(item.newTag, oldTagExpr, styles, JSXOpeningElement)
+      const newTagExpr = getNewTagExpr(item.newTag, oldTagExpr, styles, JSXOpeningElement, wrapInMemo)
       lastImport.insertAfter(newTagExpr)
     }
   }
@@ -82,8 +83,8 @@ module.exports = ({ types: t }) => {
     }
   }
 
-  function getNewTagExpr (newTag, oldTagExpr, styles, path) {
-    const styled = t.taggedTemplateExpression(
+  function getNewTagExpr (newTag, oldTagExpr, styles, path, wrapInMemo) {
+    let styled = t.taggedTemplateExpression(
       t.callExpression(csstaTemplate, [oldTagExpr]),
       t.templateLiteral([
         t.templateElement({
@@ -92,10 +93,12 @@ module.exports = ({ types: t }) => {
         })
       ], [])
     )
-    const reactIdentifier = utils.getReactImport(t, path)
-    // TODO: Make React.memo() optional through settings
-    const memoed = t.callExpression(t.memberExpression(reactIdentifier, t.identifier('memo')), [styled])
-    const d = t.variableDeclarator(t.identifier(newTag), memoed)
+    if (wrapInMemo == null) wrapInMemo = DEFAULT_WRAP_IN_MEMO
+    if (wrapInMemo) {
+      const reactIdentifier = utils.getReactImport(t, path)
+      styled = t.callExpression(t.memberExpression(reactIdentifier, t.identifier('memo')), [styled])
+    }
+    const d = t.variableDeclarator(t.identifier(newTag), styled)
     return t.variableDeclaration('const', [d])
   }
 
@@ -121,7 +124,7 @@ module.exports = ({ types: t }) => {
 
     if (className && stylesImport) {
       hasTransformedClassName = true
-      processItem(JSXOpeningElement, className)
+      processItem(JSXOpeningElement, className, state.opts.wrapInMemo)
     }
   }
 
