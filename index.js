@@ -1,7 +1,8 @@
 const utils = require('./utils')
 
 const DEFAULT_CLASS_ATTRIBUTE = 'styleName'
-const DEFAULT_ADD_CSS_HASH = true
+const DEFAULT_ADD_CSS_HASH = false
+const DEFAULT_EXTENSIONS = ['css', 'styl']
 const ADD_CSS_HASH_DELAY = 300
 const CSSTA_TEMPLATE = 'styled'
 const NEW_TAG_PREFIX = 'Styled'
@@ -9,6 +10,12 @@ const NEW_TAG_PREFIX = 'Styled'
 function isTargetAttr (attribute, classAttribute) {
   if (!classAttribute) classAttribute = DEFAULT_CLASS_ATTRIBUTE
   return attribute.name.name === classAttribute
+}
+
+function hasTargetExtension (filename = '', extensions = DEFAULT_EXTENSIONS) {
+  const match = filename.match(/\.([^/]+)$/)
+  const extension = match && match[1]
+  return extension && extensions.includes(extension)
 }
 
 module.exports = ({ types: t }) => {
@@ -124,7 +131,7 @@ module.exports = ({ types: t }) => {
     const addCssHash = state.opts.addCssHash != null
       ? state.opts.addCssHash
       : DEFAULT_ADD_CSS_HASH
-    if (addCssHash && /\.css$/.test(state.file.opts.filename)) {
+    if (addCssHash && hasTargetExtension(state.file.opts.filename, state.opts.extensions)) {
       const filename = state.file.opts.filename
       // Delay execution to account for Save All delay in IDEs
       if (delayExecution) {
@@ -150,7 +157,7 @@ module.exports = ({ types: t }) => {
             .forEach(p => {
               if (p.isImportDeclaration()) {
                 lastImport = p
-                if (/\.css$/.test(p.node.source.value)) stylesImport = p
+                if (hasTargetExtension(p.node.source.value, state.opts.extensions)) stylesImport = p
               }
             })
 
