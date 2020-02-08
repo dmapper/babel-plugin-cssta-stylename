@@ -1,0 +1,52 @@
+$black = black
+$white = white
+$topbarHeight = 40px
+
+.root
+  flex 1
+  --color $black
+  --bgColor $white
+  color var(--color)
+  background-color var(--bgColor)
+  &[theme='dark']
+    --color $white
+    --bgColor $black
+
+.topbar
+  height $topbarHeight
+  background-color var(--bgColor)
+  transition opacity 0.3s
+  animation fadeIn 0.3s ease-in
+  &[transparent]
+    opacity 0.2
+  &[size='l']
+    height 60px
+  &[size='s']
+    height 30px
+    @media (max-width: 600px)
+      height 20px
+
+.button
+  font-size 12px
+  @media (min-width: 500px)
+    &[variant='primary']
+      color red
+
+.header
+  font-size 24px
+  line-height 32px
+  animation fadeIn 1s ease-out
+  &[bold]
+    font-weight bold
+
+.content
+  background-color rgba(0, 60, 120, 0.5)
+  &[full]
+    flex 1
+    min-height 100vh
+
+@keyframes fadeIn
+  0%
+    opacity 0
+  100%
+    opacity 1

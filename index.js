@@ -93,6 +93,7 @@ module.exports = ({ types: t }) => {
       ], [])
     )
     const reactIdentifier = utils.getReactImport(t, path)
+    // TODO: Make React.memo() optional through settings
     const memoed = t.callExpression(t.memberExpression(reactIdentifier, t.identifier('memo')), [styled])
     const d = t.variableDeclarator(t.identifier(newTag), memoed)
     return t.variableDeclaration('const', [d])

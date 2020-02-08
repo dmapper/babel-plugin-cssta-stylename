@@ -31,8 +31,18 @@
     "index.js",
     "utils.js",
     "transformer.js",
+    "preprocess.js",
     "README.md"
   ],
+  "dependencies": {
+    "@dmapper/stylus-hash-plugin": "0.0.1",
+    "@startupjs/postcss-rem-to-pixel": "^1004.1.2",
+    "poststylus": "^1.0.0",
+    "stylus": ">=0.54.5"
+  },
+  "peerDependencies": {
+    "babel-plugin-cssta": "*"
+  },
   "devDependencies": {
     "@babel/core": "^7.8.3",
     "@babel/plugin-syntax-jsx": "^7.8.3",

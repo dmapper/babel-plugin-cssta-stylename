@@ -1,6 +1,7 @@
 const fs = require('fs')
 const css = require('css')
 const nodePath = require('path')
+const preprocessors = require('./preprocessors')
 
 exports.parseAst = function parseAst (modulePath, cssPath) {
   const pathHint = modulePath.charAt(0)
@@ -15,7 +16,8 @@ exports.parseAst = function parseAst (modulePath, cssPath) {
       ? nodePath.join(pathReference, cssPath)
       : require.resolve(cssPath)
   )
-  const cssString = fs.readFileSync(cssPathReference, 'utf-8')
+  let cssString = fs.readFileSync(cssPathReference, 'utf-8')
+  cssString = preprocess(cssString, cssPathReference)
   return css.parse(cssString, { source: cssPathReference })
 }
 
@@ -121,4 +123,12 @@ exports.getReactImport = function getReactImport (t, path) {
     return importModuleName === 'react'
   })
   return importBindingsForModule[0] && t.cloneDeep(importBindingsForModule[0].identifier)
+}
+
+function preprocess (src, filename) {
+  if (/\.styl$/.test(filename)) {
+    return preprocessors.processStylus(src, filename)
+  } else {
+    return src
+  }
 }
