@@ -84,19 +84,20 @@ exports.hasAnimation = function hasAnimation (styles) {
 // Check if .js file with the same name exists.
 // If it does -- check if it uses the css file (filename).
 // If it does -- check if
-exports.maybeUpdateCssHash = function maybeUpdateCssHash (filename) {
-  let componentName = filename.match(/\/([^/]+)\.(?:styl|css)$/)
+exports.maybeUpdateCssHash = function maybeUpdateCssHash (filename, extensions) {
+  const extensionsOr = '(?:' + extensions.join('|').replace(/\./g, '\\.') + ')'
+  let componentName = filename.match(new RegExp(`\\/([^/]+)\\.${extensionsOr}$`))
   componentName = componentName && componentName[1]
-  const jsFileName = `./${componentName}.js`
+  const jsFileName = filename.replace(/[^\/]+$/, `${componentName}.js`)
   if (!fs.existsSync(jsFileName)) return
   let jsFile = fs.readFileSync(jsFileName, { encoding: 'utf8' })
-  if (!new RegExp(`\\.\\/${componentName}\\.(?:styl|css)['"]`).test(jsFile)) return
+  if (!new RegExp(`\\.\\/${componentName}\\.${extensionsOr}['"]`).test(jsFile)) return
   const content = fs.readFileSync(filename, { encoding: 'utf8' })
   const newHash = hashCode(content)
   let oldHash = jsFile.match(/@css_hash_([\d-]+)/)
   oldHash = oldHash && oldHash[1]
   if (~~oldHash === ~~newHash) return
-  jsFile = jsFile.replace(new RegExp(`(\\.\\/${componentName}\\.(?:styl|css)['"])[^\\n]*\n`), `$1 // @css_hash_${newHash}\n`)
+  jsFile = jsFile.replace(new RegExp(`(\\.\\/${componentName}\\.${extensionsOr}['"])[^\\n]*\n`), `$1 // @css_hash_${newHash}\n`)
   fs.writeFileSync(jsFileName, jsFile)
   console.log('[babel-plugin-cssta-stylename] updated @css_hash in', jsFileName)
 }

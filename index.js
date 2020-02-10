@@ -140,10 +140,10 @@ module.exports = ({ types: t }) => {
       // Delay execution to account for Save All delay in IDEs
       if (delayExecution) {
         setTimeout(() => {
-          utils.maybeUpdateCssHash(filename)
+          utils.maybeUpdateCssHash(filename, state.opts.extensions || DEFAULT_EXTENSIONS)
         }, ADD_CSS_HASH_DELAY)
       } else {
-        utils.maybeUpdateCssHash(filename)
+        utils.maybeUpdateCssHash(filename, state.opts.extensions || DEFAULT_EXTENSIONS)
       }
     }
   }
